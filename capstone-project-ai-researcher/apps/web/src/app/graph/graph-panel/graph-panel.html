@@ -1,0 +1,87 @@
+<aside class="panel">
+  <div>
+    <div class="panel__title">Pipeline de raciocínio</div>
+    <div class="panel__subtitle">
+      Etapas executadas antes de cada resposta — busca, avaliação de contexto e, quando necessário,
+      complemento na web.
+    </div>
+  </div>
+
+  @if (fallbackActive()) {
+  <div class="fallback-banner">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8"></circle>
+      <path d="M4 12h16M12 4c2.5 2.2 2.5 13.8 0 16M12 4c-2.5 2.2-2.5 13.8 0 16"></path>
+    </svg>
+    <span>Contexto local insuficiente neste turno — a etapa Search buscou complemento na web.</span>
+  </div>
+  }
+
+  <div class="steps">
+    @for (step of views(); track step.id) {
+    <div class="step">
+      <div class="step__rail">
+        <div class="step__circle" [class.step__circle--running]="step.running">
+          @if (step.running) {
+          <svg
+            class="spin"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="8"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-dasharray="28 50"
+            ></circle>
+          </svg>
+          } @else {
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="4,12.5 9.5,18 20,5"></polyline>
+          </svg>
+          }
+        </div>
+        <div class="step__line"></div>
+      </div>
+      <div class="step__body">
+        <div class="step__row">
+          <span class="step__label">{{ step.label }}</span>
+          <span class="step__tag" [class.step__tag--running]="step.running">
+            {{ step.running ? 'Em execução' : step.duration }}
+          </span>
+        </div>
+        <div class="step__description">{{ step.description }}</div>
+        @if (step.detail) {
+        <div class="step__detail">{{ step.detail }}</div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+</aside>

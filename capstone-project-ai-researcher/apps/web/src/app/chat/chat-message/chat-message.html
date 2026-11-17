@@ -1,0 +1,98 @@
+@if (isUser()) {
+<div class="bubble bubble--user">{{ text() }}</div>
+} @else {
+<div class="bubble bubble--assistant">
+  <div class="bubble__header">
+    <span class="bubble__avatar" aria-hidden="true">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M4 5h16v11H9l-5 4z"></path>
+      </svg>
+    </span>
+    <span class="bubble__label">AI RESEARCHER</span>
+  </div>
+  <p class="bubble__text">
+    {{ text() }}@if (showCursor()) {<span class="bubble__cursor" aria-hidden="true"></span>}
+  </p>
+  @if (citations().length > 0) {
+  <div class="citations">
+    @for (citation of citations(); track citation.sourceUrl) {
+    <button
+      type="button"
+      class="citation-pill"
+      [class.citation-pill--open]="citation.sourceUrl === openCitation()?.sourceUrl"
+      (click)="toggleCitation(citation.sourceUrl)"
+    >
+      {{ citation.label }}
+    </button>
+    }
+  </div>
+  @if (openCitation(); as aberta) {
+  <div class="citation-panel">
+    <button
+      type="button"
+      class="citation-panel__close"
+      aria-label="Fechar"
+      (click)="toggleCitation(aberta.sourceUrl)"
+    >
+      <svg
+        width="11"
+        height="11"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      >
+        <line x1="5" y1="5" x2="19" y2="19"></line>
+        <line x1="19" y1="5" x2="5" y2="19"></line>
+      </svg>
+    </button>
+    <div class="citation-panel__title">Fonte da citação</div>
+    <div class="citation-panel__label">{{ aberta.label }}</div>
+    <div class="citation-panel__row">
+      @if (aberta.periodEnd) {
+      <div>
+        <div class="citation-panel__key">Data-base</div>
+        <div class="citation-panel__value citation-panel__value--strong">
+          {{ aberta.periodEnd }}
+        </div>
+      </div>
+      }
+      <div>
+        <div class="citation-panel__key">Origem</div>
+        <div class="citation-panel__value">{{ aberta.origem }}</div>
+      </div>
+    </div>
+    <a
+      class="citation-panel__link"
+      [href]="aberta.sourceUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Abrir documento original
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M7 17L17 7M9 7h8v8"></path>
+      </svg>
+    </a>
+  </div>
+  } }
+</div>
+}

@@ -28,6 +28,11 @@ jobs:
       - run: pnpm build
       - run: pnpm test
       - run: pnpm lint
+      # Chromium só — playwright.config.ts (apps/web) só declara o projeto chromium.
+      # DEMO=true (playwright.config.ts, webServer) tira Postgres e Vertex AI da equação:
+      # nenhum secret novo precisa entrar no workflow pra rodar o F.7.
+      - run: pnpm --filter @hero/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
 
   deploy:
     needs: test
@@ -62,15 +67,91 @@ jobs:
             .
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/api:${{ github.sha }}
 
-      - name: Deploy no Cloud Run
+      # gcloud rejeita --no-traffic ao CRIAR um serviço Cloud Run (só funciona em cima de uma
+      # revisão já existente) — descoberto no H.5, reconstruindo o projeto do zero depois de
+      # `pnpm destroy`. Sem revisão anterior servindo tráfego, também não faz sentido canary:
+      # não tem o que proteger. Esse passo decide qual dos dois deploys abaixo roda.
+      - name: Verifica se o Cloud Run já existe
+        id: check-service
+        run: |
+          if gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} --region=${{ env.REGION }} --project=${{ env.PROJECT_ID }} >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Canary (G.6): sobe a revisão nova sem tráfego nenhum (no_traffic) e com uma tag fixa
+      # ("canary"), que o Cloud Run expõe numa URL própria — https://canary---<serviço>. A
+      # revisão anterior continua servindo 100% do tráfego real até o healthcheck abaixo
+      # passar. Se a revisão nova estiver quebrada, ela nunca chega a servir usuário nenhum —
+      # não precisa de rollback pra esse caso, só pro caso de algo passar no healthcheck e
+      # falhar depois (aí entra scripts/rollback.ts, pnpm rollback).
+      - name: Deploy no Cloud Run (canary, sem tráfego)
+        if: steps.check-service.outputs.exists == 'true'
+        id: deploy-canary
         uses: google-github-actions/deploy-cloudrun@v3
         with:
           service: ${{ env.CLOUD_RUN_SERVICE }}
           region: ${{ env.REGION }}
           project_id: ${{ env.PROJECT_ID }}
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/api:${{ github.sha }}
-          secrets: DATABASE_URL=database-url:latest
+          secrets: |-
+            DATABASE_URL=database-url:latest
+            LANGFUSE_PUBLIC_KEY=langfuse-public-key:latest
+            LANGFUSE_SECRET_KEY=langfuse-secret-key:latest
+            SERPER_API_KEY=serper-api-key:latest
+            OTEL_EXPORTER_OTLP_HEADERS=otel-exporter-otlp-headers:latest
+          env_vars: |-
+            GOOGLE_CLOUD_PROJECT_ID=${{ env.PROJECT_ID }}
+            LANGFUSE_BASE_URL=https://us.cloud.langfuse.com
+            OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-sa-east-1.grafana.net/otlp
           flags: --add-cloudsql-instances=${{ env.PROJECT_ID }}:${{ env.REGION }}:ai-researcher-db
+          no_traffic: true
+          tag: canary
+
+      # Primeiro deploy do serviço: sem --no-traffic/--tag, sobe direto com 100% do tráfego.
+      # O canary de verdade (proteção contra revisão quebrada) só existe a partir do segundo
+      # deploy em diante, quando já há uma revisão anterior pra manter no ar se o healthcheck
+      # abaixo falhar.
+      - name: Deploy no Cloud Run (primeiro deploy, sem canary)
+        if: steps.check-service.outputs.exists == 'false'
+        id: deploy-first
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: ${{ env.CLOUD_RUN_SERVICE }}
+          region: ${{ env.REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/api:${{ github.sha }}
+          secrets: |-
+            DATABASE_URL=database-url:latest
+            LANGFUSE_PUBLIC_KEY=langfuse-public-key:latest
+            LANGFUSE_SECRET_KEY=langfuse-secret-key:latest
+            SERPER_API_KEY=serper-api-key:latest
+            OTEL_EXPORTER_OTLP_HEADERS=otel-exporter-otlp-headers:latest
+          env_vars: |-
+            GOOGLE_CLOUD_PROJECT_ID=${{ env.PROJECT_ID }}
+            LANGFUSE_BASE_URL=https://us.cloud.langfuse.com
+            OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-sa-east-1.grafana.net/otlp
+          flags: --add-cloudsql-instances=${{ env.PROJECT_ID }}:${{ env.REGION }}:ai-researcher-db
+
+      - name: Healthcheck da revisão nova
+        run: |
+          # steps.deploy-canary.outputs.url já vem com a tag quando `tag: canary` é usado no
+          # passo acima (https://canary---ai-researcher-api-<hash>.<região>.a.run.app) — não
+          # precisa (e não pode) prefixar de novo. Confirmado contra produção real: prefixar
+          # de novo gerava "canary---canary---...", 404, e o healthcheck barrou a promoção
+          # corretamente (a revisão antiga nunca saiu de 100% do tráfego) — só o script que
+          # estava errado, não o mecanismo de segurança. No primeiro deploy (sem canary),
+          # steps.deploy-canary não roda e o output fica vazio — cai no da direita.
+          URL="${{ steps.deploy-canary.outputs.url || steps.deploy-first.outputs.url }}"
+          echo "Checando $URL/api/health..."
+          curl --fail --retry 8 --retry-delay 5 --retry-connrefused "$URL/api/health"
+
+      - name: Promove a revisão canary pra 100% do tráfego
+        if: steps.check-service.outputs.exists == 'true'
+        run: |
+          gcloud run services update-traffic ${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.REGION }} --project=${{ env.PROJECT_ID }} --to-latest
 
       - name: Build do Angular
         run: pnpm turbo run build --filter=@hero/web

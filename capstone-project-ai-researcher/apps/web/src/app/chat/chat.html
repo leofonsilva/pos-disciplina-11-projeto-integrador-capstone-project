@@ -1,0 +1,54 @@
+<div class="chat">
+  <header class="chat__nav">
+    <span class="chat__brand">AI RESEARCHER</span>
+    <button type="button" class="chat__reset" (click)="onReset()">Nova conversa</button>
+  </header>
+
+  <div class="chat__disclaimer">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9"></circle>
+      <line x1="12" y1="11" x2="12" y2="16.5"></line>
+      <circle cx="12" cy="7.5" r="0.9" fill="currentColor" stroke="none"></circle>
+    </svg>
+    <span>Este assistente apresenta informações públicas, não recomendação de investimento.</span>
+  </div>
+
+  <div class="chat__body">
+    <div class="chat__column">
+      <div class="chat__messages">
+        @for (message of messages(); track message.id) {
+        <app-chat-message [message]="message" />
+        }
+      </div>
+
+      <div class="chat__composer">
+        <input
+          class="chat__input"
+          type="text"
+          placeholder="Pergunte sobre indicadores financeiros de uma empresa da B3…"
+          [value]="inputValue()"
+          (input)="onInput($event)"
+          (keydown)="onKeydown($event)"
+        />
+        <button
+          type="button"
+          class="chat__send"
+          [disabled]="!inputValue().trim() || pending()"
+          (click)="onSend()"
+        >
+          Enviar
+        </button>
+      </div>
+    </div>
+
+    <app-graph-panel />
+  </div>
+</div>

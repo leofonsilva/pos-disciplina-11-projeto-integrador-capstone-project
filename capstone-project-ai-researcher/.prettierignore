@@ -7,3 +7,7 @@ pnpm-lock.yaml
 
 # Prosa: markdown didático e documentação, não é escopo do Prettier
 **/*.md
+
+# Exportado do Claude Design (F.1) — não é código nosso, e o .dc.html nem é HTML padrão
+# (Prettier trava em "<input ...></input>", que a própria ferramenta gera)
+docs/design/prototype

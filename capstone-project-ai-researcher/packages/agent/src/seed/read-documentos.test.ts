@@ -1,0 +1,20 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { describe, expect, it } from 'vitest';
+
+import { lerDocumentos } from './read-documentos.js';
+
+const CORPUS_DIR = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../corpus/data/documentos',
+);
+
+describe('lerDocumentos', () => {
+  it('lê e valida os 80 documentos do corpus versionado (20 empresas × 4 trimestres)', () => {
+    const documentos = lerDocumentos(CORPUS_DIR);
+
+    expect(documentos).toHaveLength(80);
+    expect(new Set(documentos.map((documento) => documento.ticker)).size).toBe(20);
+  });
+});

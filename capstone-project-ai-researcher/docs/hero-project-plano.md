@@ -21,7 +21,7 @@
 | 1 — Ideação, Setup e Deploy Inicial | 1h | Starter Kit, AI Dev Skills, Deploy Zero em Cloud Run |
 | 2 — Orquestração Cognitiva e APIs | 1,5h | LangGraph.js, tool calling, RAG com fallback, upsert retroativo |
 | 3 — Qualidade, Resiliência e MCP | 1,5h | Testes automatizados, circuit breaker, degradação graciosa, servidor MCP |
-| 4 — Frontend Design e Integração | 1,5h | Google Stitch, Frontend Skills, UI reativa em Angular 22 |
+| 4 — Frontend Design e Integração | 1,5h | Claude Design, Frontend Skills, UI reativa em Angular 22 |
 | 5 — Observabilidade e Produção | 1,5h | Langfuse, Grafana, rate limiting, canary e rollback |
 | 6 — Empacotamento, Demo e Comunidade | 1h | README, showcase, submissão, clean-up |
 | | **8h** | |

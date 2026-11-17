@@ -1,4 +1,9 @@
+import { registrarLangfuseTracing } from '@hero/agent';
 import { build } from './app.js';
+import { registrarOtelMetrics } from './observability/otel-metrics.js';
+
+registrarLangfuseTracing();
+registrarOtelMetrics();
 
 const app = build();
 

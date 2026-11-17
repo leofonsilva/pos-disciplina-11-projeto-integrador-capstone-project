@@ -11,11 +11,22 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@fastify/rate-limit": "11.2.0",
+    "@hero/agent": "workspace:*",
     "@hero/contracts": "workspace:*",
+    "@hero/mcp-server": "workspace:*",
+    "@opentelemetry/api": "1.9.1",
+    "@opentelemetry/exporter-metrics-otlp-proto": "0.221.0",
+    "@opentelemetry/resources": "2.10.0",
+    "@opentelemetry/sdk-metrics": "2.10.0",
+    "@opentelemetry/semantic-conventions": "1.43.0",
     "fastify": "5.11.2",
-    "pg": "8.22.0"
+    "fastify-plugin": "6.0.0",
+    "pg": "8.22.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
     "@types/pg": "8.21.0"
   }
 }

@@ -6,7 +6,9 @@ export interface HealthRouteOptions {
 }
 
 const healthRoute: FastifyPluginAsync<HealthRouteOptions> = async (app, { checkDatabase }) => {
-  app.get('/health', async () => {
+  // Sem rate limit (G.4): é a rota que o próprio Cloud Run e o capstone:check batem com
+  // frequência, e é barata (só um SELECT), sem custo de LLM pra proteger.
+  app.get('/health', { config: { rateLimit: false } }, async () => {
     const databaseOk = await checkDatabase();
 
     return healthResponseSchema.parse({

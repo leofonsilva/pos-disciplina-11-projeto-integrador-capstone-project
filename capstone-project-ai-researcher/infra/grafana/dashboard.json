@@ -1,0 +1,85 @@
+{
+  "uid": "ai-researcher-api-operacional",
+  "title": "AI Researcher — Operação da API",
+  "description": "RED (rate, erro, duração) por rota HTTP do apps/api, via OpenTelemetry (OTLP push). Não duplica o que o Langfuse já mostra (custo/tokens por chamada de LLM) — foco aqui é saúde do serviço.",
+  "tags": ["ai-researcher", "g3"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Taxa de requisições por rota",
+      "description": "req/s, por http.route",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+          "expr": "sum by (http_route) (rate(http_server_request_duration_seconds_count{service_name=\"ai-researcher-api\"}[5m]))",
+          "legendFormat": "{{http_route}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Latência p95 por rota",
+      "description": "histogram_quantile(0.95) sobre http.server.request.duration",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+          "expr": "histogram_quantile(0.95, sum by (http_route, le) (rate(http_server_request_duration_seconds_bucket{service_name=\"ai-researcher-api\"}[5m])))",
+          "legendFormat": "{{http_route}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Taxa de erro (5xx) por rota",
+      "description": "proporção de respostas 5xx sobre o total, por rota",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1 },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+          "expr": "sum by (http_route) (rate(http_server_request_duration_seconds_count{service_name=\"ai-researcher-api\", http_response_status_code=~\"5..\"}[5m])) / sum by (http_route) (rate(http_server_request_duration_seconds_count{service_name=\"ai-researcher-api\"}[5m]))",
+          "legendFormat": "{{http_route}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Requisições por status",
+      "description": "req/s, por código de status HTTP",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "__DATASOURCE_UID__" },
+          "expr": "sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count{service_name=\"ai-researcher-api\"}[5m]))",
+          "legendFormat": "{{http_response_status_code}}"
+        }
+      ]
+    }
+  ]
+}

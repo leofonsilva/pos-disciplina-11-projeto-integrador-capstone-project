@@ -120,7 +120,6 @@ Metade do esforço técnico do projeto.
 | E.8 | `packages/mcp-server` — tools com schemas zod | Descrições revisadas; são prompt, não documentação |
 | E.9 | Transporte stdio validado no Claude Desktop | `claude mcp add` e conversa funcionando |
 | E.10 | Transporte Streamable HTTP + gateway para o Angular | Mesmas tools, duas portas |
-| E.11 | CI com testes como *required check* | Merge bloqueado se falhar |
 | E.12 | `capstone:check` itens 4, 5, 10 | Três verificações novas passando |
 
 **~12h** · Tag `v3` · E.4 já entrega o congelamento de fixtures previsto nas práticas de produção.
@@ -131,7 +130,7 @@ Metade do esforço técnico do projeto.
 
 | # | Tarefa | Pronto quando |
 |---|---|---|
-| F.1 | Protótipo no Google Stitch | Telas exportadas antes de qualquer código |
+| F.1 | Protótipo no Claude Design (`claude.ai/design`) | Telas exportadas antes de qualquer código |
 | F.2 | Skill `frontend-design` com tokens e regras | Gera componente aderente ao protótipo |
 | F.3 | Chat com streaming | Resposta aparece token a token |
 | F.4 | Citações clicáveis com data-base | Abre a fonte; mostra o período do dado |
@@ -167,7 +166,7 @@ Metade do esforço técnico do projeto.
 | H.2 | `make destroy` | Remove todos os recursos, Cloud SQL primeiro |
 | H.3 | `capstone:check` itens 11, 12 + formatação final da saída | Bloco pronto para colar no Discord |
 | H.4 | Branch `starter` derivado da `v1` + `capstone:check` completo | É o que o aluno clona |
-| H.5 | **Validação em conta GCP limpa**, do clone ao deploy | Executado por alguém que não escreveu o código |
+| H.5 | **Validação em conta GCP limpa**, do clone ao deploy — ✅ concluído (destruição + reconstrução real de `ai-researcher-capstone`, ver `.claude/CLAUDE.md`) | Executado por alguém que não escreveu o código |
 
 **~6h** · Tag `v6`
 

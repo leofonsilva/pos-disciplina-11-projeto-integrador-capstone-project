@@ -1,1 +1,36 @@
-/* You can add global styles to this file, and also import other style files */
+/* Tokens do protótipo do F.1 (docs/design/prototype/ai-researcher-chat.dc.html) — ver a skill
+   frontend-design em .claude/skills/frontend-design/SKILL.md para as regras de uso. */
+:root {
+  --bg: #080909;
+  --surface: #141517;
+  --surface-2: #1c1e21;
+  --border: #2b2e32;
+  --text: #f2f3f4;
+  --text-muted: #95999e;
+  --cyan: #14fefe;
+  --cyan-dim: #0d8f8f;
+  --cyan-tint: rgba(20, 254, 254, 0.1);
+  --lime: #a3ea1f;
+  --font-display: 'Anton', sans-serif;
+  --font-body: 'Poppins', sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--cyan);
+}
+
+a:hover {
+  color: #7cffff;
+}

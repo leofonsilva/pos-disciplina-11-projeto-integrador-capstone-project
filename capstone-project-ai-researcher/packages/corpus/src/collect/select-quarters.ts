@@ -52,7 +52,10 @@ interface DemonstrativosAno {
 // miss e disparam o download 20 vezes em paralelo antes da primeira terminar.
 const cacheDemonstrativos = new Map<string, Promise<DemonstrativosAno>>();
 
-function agruparPorEmpresa(linhas: LinhaCvm[]): Map<string, LinhaCvm[]> {
+// A partir daqui, funções puras exportadas só pra teste (E.1) — a orquestração ao redor
+// (carregarDemonstrativos, coletarTrimestre*) depende de rede e não é testada com unitário,
+// ver CLAUDE.md.
+export function agruparPorEmpresa(linhas: LinhaCvm[]): Map<string, LinhaCvm[]> {
   const porEmpresa = new Map<string, LinhaCvm[]>();
   for (const linha of linhas) {
     const cdCvm = linha.CD_CVM;
@@ -130,7 +133,7 @@ interface DemonstrativosEmpresa {
  * mesmo sendo uma das maiores do varejo). Usa consolidado quando existe; cai pro individual
  * quando não — sempre as quatro demonstrações da mesma variante, nunca misturadas.
  */
-function demonstrativosDaEmpresa(
+export function demonstrativosDaEmpresa(
   ano: DemonstrativosAno,
   cdCvm: string,
 ): DemonstrativosEmpresa | undefined {
@@ -155,14 +158,14 @@ function demonstrativosDaEmpresa(
   return undefined;
 }
 
-function escolherMaiorVersao(linhas: LinhaCvm[]): LinhaCvm | undefined {
+export function escolherMaiorVersao(linhas: LinhaCvm[]): LinhaCvm | undefined {
   return linhas.reduce<LinhaCvm | undefined>((melhor, atual) => {
     if (!melhor) return atual;
     return Number(atual.VERSAO) > Number(melhor.VERSAO) ? atual : melhor;
   }, undefined);
 }
 
-function filtroBase(
+export function filtroBase(
   linha: LinhaCvm,
   dtRefer: string,
   ordemExerc: 'ÚLTIMO' | 'PENÚLTIMO',
@@ -175,7 +178,7 @@ function filtroBase(
   );
 }
 
-function buscarConta(
+export function buscarConta(
   linhas: LinhaCvm[],
   cdConta: string,
   dtRefer: string,
@@ -194,7 +197,7 @@ function buscarConta(
  * caso de mais de um candidato, fica com o de código mais raso (menos pontos), que é sempre
  * a linha-resumo, não uma sub-linha de mesmo nome.
  */
-function buscarContaPorDescricao(
+export function buscarContaPorDescricao(
   linhas: LinhaCvm[],
   descricoesAceitas: string[],
   dtRefer: string,
@@ -214,13 +217,13 @@ function buscarContaPorDescricao(
   return escolherMaiorVersao(candidatos.filter((l) => profundidade(l) === menorProfundidade));
 }
 
-function valorConta(linha: LinhaCvm): ValorConta {
+export function valorConta(linha: LinhaCvm): ValorConta {
   const escalaMoeda = linha.ESCALA_MOEDA === 'UNIDADE' ? 'UNIDADE' : 'MIL';
   return { valor: Number(linha.VL_CONTA), escalaMoeda };
 }
 
 /** Subtrai duas leituras cruas da CVM sem converter escala — a conversão acontece uma única vez, na normalização. */
-function subtrairValorConta(atual: ValorConta, anterior: ValorConta): ValorConta {
+export function subtrairValorConta(atual: ValorConta, anterior: ValorConta): ValorConta {
   if (atual.escalaMoeda !== anterior.escalaMoeda) {
     throw new Error(
       `ESCALA_MOEDA divergente entre trimestres da mesma empresa (${atual.escalaMoeda} vs ${anterior.escalaMoeda}) — dado anômalo, não dá pra subtrair com segurança.`,
@@ -229,21 +232,21 @@ function subtrairValorConta(atual: ValorConta, anterior: ValorConta): ValorConta
   return { valor: atual.valor - anterior.valor, escalaMoeda: atual.escalaMoeda };
 }
 
-function periodoLabel(mes: Mes, ano: number): string {
+export function periodoLabel(mes: Mes, ano: number): string {
   return `${mes / 3}T${String(ano).slice(2)}`;
 }
 
-function periodEndIso(ano: number, mes: number): string {
+export function periodEndIso(ano: number, mes: number): string {
   const ultimoDia = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
   return `${ano}-${String(mes).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
 }
 
-function inicioTrimestreIso(ano: number, mes: Mes): string {
+export function inicioTrimestreIso(ano: number, mes: Mes): string {
   const mesInicio = mes - 2;
   return `${ano}-${String(mesInicio).padStart(2, '0')}-01`;
 }
 
-function candidatosTrimestres(hoje: Date, quantidade: number): TrimestreCandidato[] {
+export function candidatosTrimestres(hoje: Date, quantidade: number): TrimestreCandidato[] {
   const candidatos: TrimestreCandidato[] = [];
   let mesTrimestre = (Math.ceil((hoje.getUTCMonth() + 1) / 3) * 3) as Mes;
   let anoTrimestre = hoje.getUTCFullYear();

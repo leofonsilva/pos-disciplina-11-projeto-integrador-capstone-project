@@ -1,0 +1,45 @@
+{
+  "title": "Abuso: taxa de 429 acima do normal",
+  "ruleGroup": "abuso",
+  "folderUID": "__FOLDER_UID__",
+  "condition": "C",
+  "noDataState": "OK",
+  "execErrState": "Error",
+  "for": "1m",
+  "labels": { "projeto": "ai-researcher" },
+  "annotations": {
+    "summary": "Taxa de respostas 429 (rate limit ou orçamento de tokens excedido) da ai-researcher-api acima do esperado nos últimos 5 minutos.",
+    "description": "Mais de 5 respostas 429 em 5 minutos — pode ser abuso, um cliente com bug, ou o rate limit/budget configurado baixo demais pro tráfego real."
+  },
+  "data": [
+    {
+      "refId": "A",
+      "datasourceUid": "__DATASOURCE_UID__",
+      "relativeTimeRange": { "from": 300, "to": 0 },
+      "model": {
+        "refId": "A",
+        "instant": true,
+        "expr": "sum(increase(http_server_request_duration_seconds_count{service_name=\"ai-researcher-api\", http_response_status_code=\"429\"}[5m]))"
+      }
+    },
+    {
+      "refId": "C",
+      "datasourceUid": "-100",
+      "relativeTimeRange": { "from": 0, "to": 0 },
+      "model": {
+        "refId": "C",
+        "type": "classic_conditions",
+        "datasource": { "type": "__expr__", "uid": "-100" },
+        "conditions": [
+          {
+            "evaluator": { "type": "gt", "params": [5] },
+            "operator": { "type": "and" },
+            "query": { "params": ["A"] },
+            "reducer": { "type": "last", "params": [] },
+            "type": "query"
+          }
+        ]
+      }
+    }
+  ]
+}

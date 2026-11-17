@@ -12,9 +12,17 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:e2e": "pnpm --filter @hero/web run e2e",
     "lint": "turbo run lint && prettier --check .",
     "collect": "pnpm --filter @hero/corpus run collect",
-    "capstone:check": "tsx scripts/capstone-check.ts"
+    "db:migrate": "pnpm --filter @hero/agent run db:migrate",
+    "seed": "pnpm --filter @hero/agent run seed",
+    "capstone:check": "tsx scripts/capstone-check.ts",
+    "grafana:dashboard": "tsx scripts/grafana-apply-dashboard.ts",
+    "grafana:alert": "tsx scripts/grafana-apply-alert.ts",
+    "load:test": "tsx scripts/load-test.ts",
+    "rollback": "tsx scripts/rollback.ts",
+    "destroy": "tsx scripts/destroy.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
